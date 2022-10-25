@@ -1,9 +1,3 @@
-//
-//  ViewController.swift
-//  iOS BLE
-//
-//  Created by shaqattack13 on 2/14/21.
-//
 // Import necessary modules
 import UIKit
 import Foundation
@@ -16,7 +10,7 @@ var txCharacteristic: CBCharacteristic?
 var rxCharacteristic: CBCharacteristic?
 
 class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDelegate {
-
+    
     // Variable Initializations
     var centralManager: CBCentralManager!
     var rssiList = [NSNumber]()
@@ -30,9 +24,7 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
     let BLE_Characteristic_uuid_Tx  = CBUUID.init(string: "6e400002-b5a3-f393-e0a9-e50e24dcca9e")
     
     var receivedData = [Int]()
-    var showGraphIsOn = true
     
-    @IBOutlet weak var showGraphLbl: UILabel!
     @IBOutlet weak var connectStatusLbl: UILabel!
     @IBOutlet weak var dataLb1: UILabel!
     @IBAction func refreshBtn(_ sender: Any) {
@@ -43,6 +35,14 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
         usleep(1000000)
         startScan()
     }
+    
+    var maze = Array(repeating: Array(repeating: 1, count: 199), count: 199)
+    var center = [99,99]
+    var screen = [UIView]()
+    let box = UIScreen.main.bounds.width / 5
+    var rows = Int()
+    //zero,zero
+    let zz = [UIScreen.main.bounds.width / 2, UIScreen.main.bounds.height / 2]
     
     // This function is called before the storyboard view is loaded onto the screen.
     // Runs only once.
@@ -56,6 +56,128 @@ class ViewController: UIViewController, CBCentralManagerDelegate, CBPeripheralDe
         // Initialize CoreBluetooth Central Manager object which will be necessary
         // to use CoreBlutooth functions
         centralManager = CBCentralManager(delegate: self, queue: nil)
+        
+        maze[99][99] = 0
+        var walls = adj(99,99,1)
+        while (walls.count != 0) {
+            let w = walls[Int.random(in: 0..<walls.count)]
+            let openings = adj(w[0],w[1],0)
+            if (openings.count == 1) {
+                maze[2 * w[0] - openings[0][0]][2 * w[1] - openings[0][1]] = 0
+                maze[w[0]][w[1]] = 0
+                walls.append(contentsOf: adj(2 * w[0] - openings[0][0],2 * w[1] - openings[0][1],1))
+            }
+            if let index = walls.firstIndex(of: w) {
+                walls.remove(at: index)
+            }
+        }
+        
+        var win = center
+        while (center[0] == win[0] && center[1] == win[1] || maze[win[0]][win[1]] == 1) {
+            win[0] = Int.random(in: 0...198)
+            win[1] = Int.random(in: 0...198)
+        }
+        maze[win[0]][win[1]] = 2
+        
+        print(maze)
+        
+        rows = Int(ceil((UIScreen.main.bounds.height - box) / 2 / box)) + 1
+        
+        let j = UIView(frame: CGRect(x: zz[0] - (0.5 * box), y: zz[1] - (0.5 * box), width: box, height: box))
+        j.backgroundColor = .red
+        self.view.addSubview(j)
+        render()
+        
+        let swipeRight = UISwipeGestureRecognizer(target: self, action: #selector(swipe))
+        swipeRight.direction = .right
+        self.view.addGestureRecognizer(swipeRight)
+        let swipeLeft = UISwipeGestureRecognizer(target: self, action: #selector(swipe))
+        swipeLeft.direction = .left
+        self.view.addGestureRecognizer(swipeLeft)
+        let swipeUp = UISwipeGestureRecognizer(target: self, action: #selector(swipe))
+        swipeUp.direction = .up
+        self.view.addGestureRecognizer(swipeUp)
+        let swipeDown = UISwipeGestureRecognizer(target: self, action: #selector(swipe))
+        swipeDown.direction = .down
+        self.view.addGestureRecognizer(swipeDown)
+        
+    }
+    
+    @objc func swipe(gesture: UIGestureRecognizer) {
+        if let swipe = gesture as? UISwipeGestureRecognizer {
+            switch swipe.direction {
+            case .right:
+                if (maze[center[0] - 1][center[1]] != 1) {
+                    center[0] -= 1
+                }
+            case .left:
+                if (maze[center[0] + 1][center[1]] != 1) {
+                    center[0] += 1
+                }
+            case .up:
+                if (maze[center[0]][center[1] + 1] != 1) {
+                    center[1] += 1
+                }
+            case .down:
+                if (maze[center[0]][center[1] - 1] != 1) {
+                    center[1] -= 1
+                }
+            default:
+                break
+            }
+            render()
+        }
+    }
+    
+    func render() {
+        for s in screen {
+            s.removeFromSuperview()
+        }
+        var storage = [UIView]()
+        for v in self.view.subviews {
+            storage.append(v)
+        }
+        screen.removeAll()
+        for col in -3...3 {
+            for row in -rows...rows {
+                let square = UIView(frame: CGRect(x: zz[0] + box * CGFloat(col) - (0.5 * box), y: zz[1] + box * CGFloat(row) - (0.5 * box), width: box, height: box))
+                let nx = center[0] + col
+                let ny = center[1] + row
+                if (nx >= 0 && ny >= 0 && nx <= 198 && ny <= 198) {
+                    switch maze[center[0] + col][center[1] + row] {
+                    case 0:
+                        square.backgroundColor = .white
+                    case 1:
+                        square.backgroundColor = .black
+                    default:
+                        square.backgroundColor = .cyan
+                    }
+                } else {
+                    square.backgroundColor = .black
+                }
+                self.view.addSubview(square)
+                screen.append(square)
+            }
+        }
+        for v in storage {
+            self.view.bringSubviewToFront(v)
+        }
+    }
+    
+    func adj(_ x: Int, _ y: Int, _ state: Int) -> [[Int]] {
+        var next = [[Int]]()
+        let delta = [[-1,0], [1,0], [0,-1], [0,1]]
+        let edge = [0, 198]
+        for move in delta {
+            let nx = x + move[0]
+            let ny = y + move[1]
+            if (nx >= 0 && ny >= 0 && nx <= 198 && ny <= 198) {
+                if (!(edge.contains(nx) || edge.contains(ny)) && maze[nx][ny] == state) {
+                    next.append([nx,ny])
+                }
+            }
+        }
+        return next
     }
     
     // This function is called right after the view is loaded onto the screen

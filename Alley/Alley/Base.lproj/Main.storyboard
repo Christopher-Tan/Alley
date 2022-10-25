@@ -24,7 +24,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Value" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="svv-Do-fEY">
-                                <rect key="frame" x="174" y="411.66666666666669" width="42" height="21"/>
+                                <rect key="frame" x="174" y="211.66666666666666" width="42" height="21"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -33,7 +33,7 @@
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="svv-Do-fEY" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="7NO-Xd-Lhd"/>
+                            <constraint firstItem="svv-Do-fEY" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" constant="-200" id="7NO-Xd-Lhd"/>
                             <constraint firstItem="pK7-G4-Z5d" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="AEq-49-L1p"/>
                             <constraint firstItem="svv-Do-fEY" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="D0H-WL-2Da"/>
                             <constraint firstItem="pK7-G4-Z5d" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="70" id="gF1-hO-CRx"/>
